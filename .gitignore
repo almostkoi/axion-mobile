@@ -32,3 +32,11 @@ Thumbs.db
 
 expo-env.d.ts
 # @end expo-cli
+# Release signing (NEVER commit) 
+android/app/axion-release.keystore
+android/keystore.properties
+
+
+# Release artefacts (built locally, distributed via GitHub releases) 
+/release/
+
