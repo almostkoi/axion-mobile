@@ -1,4 +1,5 @@
 import 'react-native-gesture-handler';
+import 'react-native-url-polyfill/auto';
 import '../global.css';
 
 import React, { useEffect } from 'react';
@@ -45,6 +46,7 @@ export default function RootLayout(): React.ReactElement {
           <Stack.Screen name="(tabs)" />
           <Stack.Screen name="player" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
           <Stack.Screen name="queue" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
+          <Stack.Screen name="add-to-playlist" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
           <Stack.Screen name="album/[id]" />
           <Stack.Screen name="artist/[id]" />
           <Stack.Screen name="playlist/[id]" />

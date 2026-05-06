@@ -2,13 +2,15 @@
   "name": "axion-mobile",
   "version": "0.1.0",
   "private": true,
+  "license": "SEE LICENSE IN LICENSE",
   "main": "expo-router/entry",
   "scripts": {
     "start": "expo start",
     "android": "expo run:android",
     "prebuild": "expo prebuild",
     "lint": "expo lint",
-    "tsc": "tsc --noEmit"
+    "tsc": "tsc --noEmit",
+    "ios": "expo run:ios"
   },
   "dependencies": {
     "expo": "~51.0.28",
@@ -27,6 +29,8 @@
     "expo-sqlite": "~14.0.6",
     "expo-media-library": "~16.0.5",
     "expo-file-system": "~17.0.1",
+    "expo-clipboard": "~6.0.3",
+    "react-native-url-polyfill": "^2.0.0",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-native": "0.74.5",
@@ -38,7 +42,8 @@
     "react-native-track-player": "^4.1.1",
     "lucide-react-native": "^0.456.0",
     "zustand": "^4.5.5",
-    "nativewind": "^4.0.36"
+    "nativewind": "4.0.36",
+    "react-native-css-interop": "0.0.36"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",

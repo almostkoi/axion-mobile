@@ -79,6 +79,10 @@ export interface Settings {
   lastScannedAt: number | null;
   /** Optional user-restricted folders (relative to /storage/emulated/0/) — empty = scan everything. */
   restrictedFolders: string[];
+  /** Base URL of a Piped API instance used for YouTube extraction.
+   *  Pure client-side YT extraction is no longer reliable in 2025 due to
+   *  PO-token enforcement; Piped acts as the authoritative resolver. */
+  pipedInstance: string;
 }
 
 export interface ScanProgress {

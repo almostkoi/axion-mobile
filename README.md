@@ -139,7 +139,7 @@ requirements; `react-native-track-player` declares this for you.
 | Queue / shuffle / repeat | ✅ | ✅ |
 | Liked playlist      | ✅      | ✅ |
 | User playlists      | ✅      | ✅ (basic; reorder & delete WIP) |
-| URL import (yt-dlp / ffmpeg) | ✅ | ❌ desktop only |
+| URL import (YT, SC, Spotify, Last.fm, direct) | ✅ via yt-dlp + ffmpeg | ✅ via `react-native-ytdl` + native fetch (no transcoding) |
 | Statistics page     | ✅      | ❌ next milestone |
 | Equalizer           | ✅      | ❌ next milestone |
 | Mini-player toggle  | ✅      | n/a (always docked) |
@@ -156,3 +156,16 @@ pnpm prebuild       # Generate native android/ folder
 pnpm tsc            # Type-check (no emit)
 pnpm lint           # Expo lint
 ```
+
+## License
+
+**Axion Source-Available License v1.0** © 2025 almostkoi.
+See [`LICENSE`](LICENSE) for the full text.
+
+In short:
+
+- **Personal & non-commercial use** is free. Modify it, fork it, run it on your own devices.
+- **Public showcase** (videos, streams, blog posts, screenshots, derivative apps) requires visible credit: name the project `Axion`, credit `almostkoi`, and link back to the source.
+- **Commercial use** (selling, paid hosting, monetised tutorials whose primary subject is Axion, bundling into for-profit products, etc.) is **not** permitted without a separate written commercial license. Contact `koi@shusui.dev`.
+
+Third-party libraries bundled with Axion remain under their own licenses and are unaffected by the terms above.

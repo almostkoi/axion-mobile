@@ -65,6 +65,7 @@ export default function HomeScreen(): React.ReactElement {
             track={t}
             isActive={current?.id === t.id}
             onPress={() => void playTrackAt(recentlyAdded, i)}
+            onLongPress={(track) => router.push({ pathname: '/add-to-playlist', params: { trackId: track.id } })}
           />
         ))}
 

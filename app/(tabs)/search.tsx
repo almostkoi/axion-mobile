@@ -129,6 +129,7 @@ export default function SearchScreen(): React.ReactElement {
             isActive={current?.id === item.id}
             showAlbum
             onPress={() => void playTrackAt(matchingTracks, index)}
+            onLongPress={(t) => router.push({ pathname: '/add-to-playlist', params: { trackId: t.id } })}
           />
         )}
         ListEmptyComponent={

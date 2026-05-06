@@ -7,9 +7,16 @@
 
 import { create } from 'zustand';
 import type {
-  Track, TrackId, Album, Artist, Playlist,
+  Track, TrackId, Album, Artist, Playlist, PlaylistId,
   Settings, ScanProgress, RepeatMode, AccentColor
 } from '../types/domain';
+import {
+  createPlaylist as dbCreatePlaylist,
+  deletePlaylist as dbDeletePlaylist,
+  addTrackToPlaylist as dbAddTrackToPlaylist,
+  removeTrackFromPlaylist as dbRemoveTrackFromPlaylist,
+  listPlaylists as dbListPlaylists
+} from '../lib/db';
 
 const DEFAULT_SETTINGS: Settings = {
   accentColor: 'green',
@@ -18,7 +25,8 @@ const DEFAULT_SETTINGS: Settings = {
   repeat: 'off',
   volume: 1,
   lastScannedAt: null,
-  restrictedFolders: []
+  restrictedFolders: [],
+  pipedInstance: 'https://pipedapi.kavin.rocks'
 };
 
 const DEFAULT_SCAN_PROGRESS: ScanProgress = {
@@ -50,6 +58,13 @@ export interface StoreState {
   setLibrary: (next: { tracks: Track[]; albums: Album[]; artists: Artist[] }) => void;
   setPlaylists: (p: Playlist[]) => void;
   patchTrack: (id: TrackId, patch: Partial<Track>) => void;
+
+  // Actions — playlists (write through to DB then refresh in-memory list)
+  createPlaylistAction: (name: string) => Promise<Playlist>;
+  deletePlaylistAction: (id: PlaylistId) => Promise<void>;
+  addTrackToPlaylistAction: (playlistId: PlaylistId, trackId: TrackId) => Promise<void>;
+  removeTrackFromPlaylistAction: (playlistId: PlaylistId, trackId: TrackId) => Promise<void>;
+  refreshPlaylists: () => Promise<void>;
 
   // Actions — settings
   setSettings: (s: Partial<Settings>) => void;
@@ -93,6 +108,43 @@ export const useStore = create<StoreState>((set) => ({
     return { tracks, tracksById, albums, artists };
   }),
   setPlaylists: (playlists) => set({ playlists }),
+
+  refreshPlaylists: async () => {
+    const fresh = await dbListPlaylists();
+    set({ playlists: fresh });
+  },
+  createPlaylistAction: async (name: string) => {
+    const trimmed = name.trim();
+    if (!trimmed) throw new Error('Playlist name is required');
+    const created = await dbCreatePlaylist(trimmed);
+    set((s) => ({ playlists: [created, ...s.playlists] }));
+    return created;
+  },
+  deletePlaylistAction: async (id: PlaylistId) => {
+    await dbDeletePlaylist(id);
+    set((s) => ({ playlists: s.playlists.filter(p => p.id !== id) }));
+  },
+  addTrackToPlaylistAction: async (playlistId: PlaylistId, trackId: TrackId) => {
+    await dbAddTrackToPlaylist(playlistId, trackId);
+    set((s) => ({
+      playlists: s.playlists.map(p =>
+        p.id === playlistId
+          ? { ...p, trackIds: [...p.trackIds, trackId], dateModified: Date.now() }
+          : p
+      )
+    }));
+  },
+  removeTrackFromPlaylistAction: async (playlistId: PlaylistId, trackId: TrackId) => {
+    await dbRemoveTrackFromPlaylist(playlistId, trackId);
+    set((s) => ({
+      playlists: s.playlists.map(p =>
+        p.id === playlistId
+          ? { ...p, trackIds: p.trackIds.filter(t => t !== trackId), dateModified: Date.now() }
+          : p
+      )
+    }));
+  },
+
   patchTrack: (id, patch) => set((s) => {
     const existing = s.tracksById[id];
     if (!existing) return {};

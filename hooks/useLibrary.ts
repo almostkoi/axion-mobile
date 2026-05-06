@@ -10,8 +10,9 @@ import { rescanLibrary } from '../lib/scanner';
 import { useStore } from '../store/useStore';
 import type { Settings } from '../types/domain';
 
-/** Refresh in-memory library snapshot from SQLite. */
-async function refresh(): Promise<void> {
+/** Refresh in-memory library snapshot from SQLite. Exported so other modules
+ *  (e.g., the URL importer) can re-hydrate after writing a row. */
+export async function refreshLibrary(): Promise<void> {
   const tracks = await listAllTracks();
   const albums = aggregateAlbums(tracks);
   const artists = aggregateArtists(tracks);
@@ -19,6 +20,8 @@ async function refresh(): Promise<void> {
   useStore.getState().setLibrary({ tracks, albums, artists });
   useStore.getState().setPlaylists(playlists);
 }
+
+const refresh = refreshLibrary;
 
 export function useLibrary(): { rescan: () => Promise<void> } {
   useEffect(() => {

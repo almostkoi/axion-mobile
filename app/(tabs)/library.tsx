@@ -2,12 +2,17 @@ import React, { useMemo, useState } from 'react';
 import { FlatList, Pressable, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
+import { Plus } from 'lucide-react-native';
 import { useStore, selectCurrentTrack } from '../../store/useStore';
 import { ACCENT_HEX, COLORS } from '../../lib/theme';
 import { TrackRow } from '../../components/TrackRow';
 import { AlbumCard } from '../../components/AlbumCard';
 import { playTrackAt } from '../../hooks/usePlayback';
 import { pluralize } from '../../lib/format';
+
+const openAddToPlaylist = (trackId?: string): void => {
+  router.push({ pathname: '/add-to-playlist', params: trackId ? { trackId } : {} });
+};
 
 type Section = 'songs' | 'albums' | 'artists' | 'playlists';
 const SECTIONS: { id: Section; label: string }[] = [
@@ -94,6 +99,7 @@ export default function LibraryScreen(): React.ReactElement {
               isActive={current?.id === item.id}
               showAlbum
               onPress={() => void playTrackAt(sortedTracks, index)}
+              onLongPress={(t) => openAddToPlaylist(t.id)}
             />
           )}
           ListEmptyComponent={
@@ -151,6 +157,28 @@ export default function LibraryScreen(): React.ReactElement {
           data={playlists}
           keyExtractor={p => p.id}
           contentContainerStyle={{ paddingBottom: 180 }}
+          ListHeaderComponent={
+            <Pressable
+              onPress={() => openAddToPlaylist()}
+              android_ripple={{ color: COLORS.surfaceHi }}
+              style={{
+                flexDirection: 'row', alignItems: 'center', gap: 12,
+                paddingHorizontal: 16, paddingVertical: 14,
+                borderBottomColor: COLORS.border, borderBottomWidth: 0.5
+              }}
+            >
+              <View style={{
+                width: 40, height: 40, borderRadius: 8,
+                backgroundColor: accentHex,
+                alignItems: 'center', justifyContent: 'center'
+              }}>
+                <Plus size={20} color="#fff" />
+              </View>
+              <Text style={{ color: COLORS.text, fontSize: 15, fontWeight: '600' }}>
+                New Playlist
+              </Text>
+            </Pressable>
+          }
           renderItem={({ item }) => (
             <Pressable
               onPress={() => router.push(`/playlist/${encodeURIComponent(item.id)}`)}

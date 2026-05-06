@@ -1,0 +1,228 @@
+Axion Source-Available License, Version 1.0
+=============================================
+
+Copyright (c) 2025 almostkoi
+All rights reserved.
+
+This software (the "Software") is licensed, not sold. By downloading,
+installing, copying, modifying, or otherwise using the Software, you
+("You" or "Licensee") agree to be bound by the terms of this license. If
+You do not accept these terms, You must not use the Software.
+
+------------------------------------------------------------------------
+1. DEFINITIONS
+------------------------------------------------------------------------
+
+"Author" means almostkoi, the copyright holder of the Software.
+
+"Software" means the source code, compiled binaries, assets, icons,
+documentation, and any other materials distributed under this license,
+together with any modified or derivative versions thereof.
+
+"Non-Commercial Use" means use of the Software solely for personal,
+educational, research, evaluation, or other purposes that do not result
+in any direct or indirect commercial advantage or monetary compensation
+to You or any third party. Examples of Non-Commercial Use include
+running the Software on Your personal device, modifying it for Your own
+use, contributing patches back to the Author, and writing about it on a
+personal blog or social media.
+
+"Commercial Use" means any use of the Software, in whole or in part,
+that is intended for or directed toward commercial advantage or
+monetary compensation. This includes, without limitation:
+
+  (a) selling, licensing, sublicensing, or renting copies of the
+      Software or any derivative work;
+
+  (b) bundling the Software (or any substantial portion or derivative
+      thereof) with a paid product or service;
+
+  (c) using the Software to provide a paid hosted service, including
+      Software-as-a-Service offerings;
+
+  (d) using the Software inside a for-profit organization in a way
+      that is integral to that organization's revenue-generating
+      activities;
+
+  (e) monetizing video, streaming, or other content in which the
+      Software is the primary subject (for example: a paid course
+      teaching how to use Axion, or a YouTube video whose principal
+      content is a tutorial about Axion that is monetized through
+      ads or sponsorships).
+
+  Personal monetized content that merely shows the Software running
+  in the background (e.g. a music streamer using Axion as their
+  player while playing games) is NOT considered Commercial Use,
+  provided the attribution requirement in Section 3 is met.
+
+"Public Distribution" means making the Software, or any work that
+includes or is derived from the Software, available to one or more
+third parties, whether by upload, download, broadcast, screening,
+publication, or any other means.
+
+------------------------------------------------------------------------
+2. GRANT OF LICENSE (NON-COMMERCIAL USE)
+------------------------------------------------------------------------
+
+Subject to Your compliance with the terms of this license, the Author
+grants You a worldwide, royalty-free, non-exclusive, non-transferable
+license to:
+
+  (a) use the Software for Non-Commercial Use;
+
+  (b) study, modify, and create derivative works of the Software
+      for Non-Commercial Use;
+
+  (c) reproduce and redistribute copies of the Software, including
+      modified versions, for Non-Commercial Use, provided that all
+      conditions in Sections 3, 5, and 6 are satisfied.
+
+------------------------------------------------------------------------
+3. ATTRIBUTION REQUIREMENT
+------------------------------------------------------------------------
+
+If You engage in Public Distribution of the Software, OR if You publicly
+showcase the Software in any video, livestream, image, article, podcast,
+presentation, social media post, application screenshot, or similar
+medium, You must provide clear and reasonably visible attribution that:
+
+  (a) identifies the Software by its name, "Axion";
+
+  (b) credits the Author by the name "almostkoi";
+
+  (c) links to or references the official source repository of the
+      Software (or, if no public repository is available at the time,
+      the most recent URL designated by the Author).
+
+Acceptable forms of attribution include, but are not limited to:
+
+  - a credit line in the description of a video or stream
+    (e.g. "Music player: Axion by almostkoi — <link>");
+
+  - an "About" or "Credits" section in a derivative application that
+    names the Software and the Author;
+
+  - a visible reference in the README, footer, or splash screen of any
+    redistributed copy or derivative work.
+
+The attribution must NOT imply that the Author endorses, sponsors, or is
+affiliated with You, Your organization, or Your use of the Software,
+unless You have obtained the Author's prior written permission.
+
+------------------------------------------------------------------------
+4. COMMERCIAL USE
+------------------------------------------------------------------------
+
+Commercial Use of the Software is NOT permitted under this license. To
+engage in any Commercial Use, You must first obtain a separate,
+written commercial license from the Author. Requests for commercial
+licensing should be sent to:
+
+    koi@shusui.dev
+
+Commercial licensing terms, including any fees, are at the sole
+discretion of the Author and will be agreed upon in writing on a
+case-by-case basis. No commercial license is granted by implication,
+estoppel, or otherwise except by an express written agreement signed
+or affirmatively confirmed by the Author.
+
+------------------------------------------------------------------------
+5. MODIFICATIONS AND REDISTRIBUTION
+------------------------------------------------------------------------
+
+You may modify the Software and redistribute Your modifications under
+this same license, subject to ALL of the following conditions:
+
+  (a) You must retain this license file, the copyright notice, and
+      all attribution notices in every copy or substantial portion
+      of the Software that You distribute.
+
+  (b) You must clearly mark any modifications You make as Your own
+      changes, dated, so that recipients can distinguish Your
+      modifications from the original Software.
+
+  (c) You must not distribute the Software, or any derivative work,
+      under a license that grants more permissive Commercial Use
+      rights than this license. Specifically, You may not relicense
+      the Software under MIT, Apache, BSD, or any other license that
+      would permit recipients to engage in Commercial Use without the
+      Author's written permission.
+
+  (d) You must not remove, obscure, or alter any branding, copyright,
+      trademark, or attribution notices that are part of the original
+      Software, except where required to comply with subsection (b).
+
+  (e) Distributions, including modified versions, must comply with
+      the attribution requirement in Section 3.
+
+------------------------------------------------------------------------
+6. THIRD-PARTY COMPONENTS
+------------------------------------------------------------------------
+
+The Software incorporates third-party libraries, frameworks, fonts,
+icons, and other materials, each of which is licensed under its own
+terms (typically MIT, Apache 2.0, BSD, ISC, or similar permissive
+licenses). Nothing in this license modifies or supersedes the licenses
+governing those third-party components, and nothing in this license
+grants You rights to those components beyond what their respective
+licenses already permit. A list of significant third-party components
+and their licenses is included with binary distributions of the
+Software.
+
+------------------------------------------------------------------------
+7. TERMINATION
+------------------------------------------------------------------------
+
+This license terminates automatically and immediately if You breach any
+of its terms. Upon termination, You must cease all use of the Software
+and destroy or delete all copies in Your possession or control. The
+provisions of Sections 1, 4 (with respect to past Commercial Use), 6,
+8, 9, and 10 survive termination.
+
+The Author reserves the right to grant a written waiver or
+reinstatement of license at the Author's sole discretion.
+
+------------------------------------------------------------------------
+8. DISCLAIMER OF WARRANTY
+------------------------------------------------------------------------
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, TITLE, AND
+NON-INFRINGEMENT. THE AUTHOR MAKES NO WARRANTY THAT THE SOFTWARE WILL
+BE ERROR-FREE, UNINTERRUPTED, OR FREE FROM HARMFUL COMPONENTS.
+
+------------------------------------------------------------------------
+9. LIMITATION OF LIABILITY
+------------------------------------------------------------------------
+
+IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
+INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
+OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
+TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+USE OF THE SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+------------------------------------------------------------------------
+10. MISCELLANEOUS
+------------------------------------------------------------------------
+
+This license constitutes the entire agreement between You and the
+Author regarding the Software and supersedes all prior or
+contemporaneous understandings. If any provision of this license is
+held to be unenforceable, the remaining provisions will remain in full
+force and effect.
+
+The Author may publish revised versions of this license under the
+"Axion Source-Available License" name; each version will be
+distinguished by a version number. Versions of the Software released
+under a particular version of the license remain governed by that
+version unless the Author explicitly relicenses them.
+
+To request a commercial license, to ask questions about acceptable use,
+or to report a license violation, contact:
+
+    koi@shusui.dev
+
+End of license.

@@ -1,7 +1,7 @@
 import React from 'react';
 import { View } from 'react-native';
 import { Tabs } from 'expo-router';
-import { Home, Library, Search, Settings as SettingsIcon } from 'lucide-react-native';
+import { Download, Home, Library, Search, Settings as SettingsIcon } from 'lucide-react-native';
 import { useStore } from '../../store/useStore';
 import { ACCENT_HEX, COLORS } from '../../lib/theme';
 import { MiniPlayer } from '../../components/MiniPlayer';
@@ -47,6 +47,13 @@ export default function TabsLayout(): React.ReactElement {
           options={{
             title: 'Search',
             tabBarIcon: ({ color, size }) => <Search size={size - 2} color={color} />
+          }}
+        />
+        <Tabs.Screen
+          name="imports"
+          options={{
+            title: 'Import',
+            tabBarIcon: ({ color, size }) => <Download size={size - 2} color={color} />
           }}
         />
         <Tabs.Screen

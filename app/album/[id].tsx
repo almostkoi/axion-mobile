@@ -101,6 +101,7 @@ export default function AlbumScreen(): React.ReactElement {
             index={index}
             isActive={current?.id === item.id}
             onPress={() => void playTrackAt(albumTracks, index)}
+            onLongPress={(t) => router.push({ pathname: '/add-to-playlist', params: { trackId: t.id } })}
           />
         )}
       />

@@ -75,6 +75,7 @@ export default function ArtistScreen(): React.ReactElement {
                     isActive={current?.id === t.id}
                     showAlbum
                     onPress={() => void playTrackAt(topTracks, i)}
+                    onLongPress={(track) => router.push({ pathname: '/add-to-playlist', params: { trackId: track.id } })}
                   />
                 ))}
               </View>
