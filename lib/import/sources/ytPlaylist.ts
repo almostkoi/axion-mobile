@@ -34,6 +34,29 @@ export interface PlaylistFirstVideo {
   playlistTitle?: string;
 }
 
+export interface PlaylistVideo {
+  videoId: string;
+  title: string;
+  author: string;
+}
+
+export interface PlaylistListing {
+  /** Best-effort display name of the playlist itself. */
+  playlistTitle: string | null;
+  videos: PlaylistVideo[];
+  /** True when we hit a pagination cap and the real playlist may be longer. */
+  truncated: boolean;
+}
+
+// Upper bound on how many tracks we'll expand from a single playlist.
+// YT-Music playlists can balloon into thousands of items (e.g. "Top 5000
+// songs of all time"); the UI would become unusable and the user almost
+// certainly didn't mean to queue 2000 downloads. Users who genuinely want
+// longer playlists can bump this or do multiple pastes.
+const PLAYLIST_HARD_CAP = 500;
+// Piped paginates at ~20-100/page. Guard against runaway loops.
+const MAX_PAGINATION_ROUNDS = 30;
+
 // Playlist ids on YouTube vary in shape:
 //   PL... (32 hex)            — user-curated playlists
 //   OLAK5uy_... (33 chars)    — auto-generated YT Music album playlists
@@ -111,6 +134,15 @@ interface PipedPlaylistResponse {
   uploader?: string;
   videos?: number;
   relatedStreams?: PipedRelatedStream[];
+  /** Opaque token Piped returns when there are more pages. */
+  nextpage?: string | null;
+  error?: string;
+  message?: string;
+}
+
+interface PipedNextPageResponse {
+  relatedStreams?: PipedRelatedStream[];
+  nextpage?: string | null;
   error?: string;
   message?: string;
 }
@@ -221,6 +253,180 @@ export async function resolvePlaylistFirstVideo(
 
   throw new Error(
     `Could not resolve playlist "${playlistId}" via any backend.\n` +
+    errors.join('\n')
+  );
+}
+
+// ─── Full-playlist resolvers (all tracks) ────────────────────────────
+
+function streamsToVideos(streams: PipedRelatedStream[]): PlaylistVideo[] {
+  const out: PlaylistVideo[] = [];
+  for (const s of streams) {
+    if ((s.type ?? 'stream') !== 'stream') continue;
+    if (!s.url) continue;
+    const videoId = extractVideoIdFromAnyUrl(s.url);
+    if (!videoId) continue;
+    out.push({
+      videoId,
+      title: s.title ?? videoId,
+      author: s.uploaderName ?? ''
+    });
+  }
+  return out;
+}
+
+function dedupe(videos: PlaylistVideo[]): PlaylistVideo[] {
+  const seen = new Set<string>();
+  const out: PlaylistVideo[] = [];
+  for (const v of videos) {
+    if (seen.has(v.videoId)) continue;
+    seen.add(v.videoId);
+    out.push(v);
+  }
+  return out;
+}
+
+async function listAllViaPiped(
+  playlistId: string,
+  pipedInstance: string,
+  errors: string[]
+): Promise<PlaylistListing | null> {
+  // Piped's pagination tokens are bound to the *base URL* that produced
+  // them (the instance signs them), so once we pick an instance we must
+  // stick with it for all `/nextpage` calls. We try each candidate
+  // instance in turn, fully paginating on whichever one yields the first
+  // page successfully.
+  const candidates = (await getPipedInstances(pipedInstance)).slice(0, PIPED_MAX_INSTANCES_PER_REQUEST);
+
+  for (const base of candidates) {
+    try {
+      const first = await pipedJson<PipedPlaylistResponse>(
+        base, `/playlists/${encodeURIComponent(playlistId)}`
+      );
+      if (first.error) throw new Error(first.message ?? first.error);
+
+      const videos: PlaylistVideo[] = streamsToVideos(first.relatedStreams ?? []);
+      let nextpage: string | null | undefined = first.nextpage;
+      let truncated = false;
+      let rounds = 0;
+
+      while (nextpage && videos.length < PLAYLIST_HARD_CAP && rounds < MAX_PAGINATION_ROUNDS) {
+        rounds += 1;
+        try {
+          const path =
+            `/nextpage/playlists/${encodeURIComponent(playlistId)}` +
+            `?nextpage=${encodeURIComponent(nextpage)}`;
+          const page = await pipedJson<PipedNextPageResponse>(base, path);
+          if (page.error) break;
+          const chunk = streamsToVideos(page.relatedStreams ?? []);
+          if (chunk.length === 0) break;
+          videos.push(...chunk);
+          nextpage = page.nextpage ?? null;
+        } catch {
+          // Stop paginating but keep what we already have rather than
+          // throwing away a successful first page.
+          break;
+        }
+      }
+
+      if (nextpage && (videos.length >= PLAYLIST_HARD_CAP || rounds >= MAX_PAGINATION_ROUNDS)) {
+        truncated = true;
+      }
+
+      const deduped = dedupe(videos).slice(0, PLAYLIST_HARD_CAP);
+      if (deduped.length === 0) {
+        throw new Error('playlist is empty or contained no streamable items');
+      }
+      return {
+        playlistTitle: first.name ?? null,
+        videos: deduped,
+        truncated
+      };
+    } catch (err) {
+      const host = (() => { try { return new URL(base).host; } catch { return base; } })();
+      errors.push(`piped ${host}: ${err instanceof Error ? err.message : String(err)}`);
+    }
+  }
+  return null;
+}
+
+async function listAllViaInvidious(
+  playlistId: string,
+  errors: string[]
+): Promise<PlaylistListing | null> {
+  const candidates = (await getInvidiousInstances()).slice(0, INVIDIOUS_MAX_INSTANCES_PER_REQUEST);
+
+  for (const base of candidates) {
+    try {
+      const videos: PlaylistVideo[] = [];
+      let playlistTitle: string | null = null;
+      let truncated = false;
+
+      for (let page = 1; page <= MAX_PAGINATION_ROUNDS; page += 1) {
+        const path =
+          `/api/v1/playlists/${encodeURIComponent(playlistId)}` +
+          `?page=${page}&page_size=200`;
+        const data = await invJson<InvidiousPlaylistResponse>(base, path);
+        if (data.error) throw new Error(data.error);
+        if (playlistTitle == null) playlistTitle = data.title ?? null;
+
+        const pageVideos = (data.videos ?? [])
+          .filter(v => !!v.videoId)
+          .map(v => ({
+            videoId: v.videoId!,
+            title: v.title ?? v.videoId!,
+            author: v.author ?? ''
+          }));
+
+        if (pageVideos.length === 0) break;
+        videos.push(...pageVideos);
+
+        if (videos.length >= PLAYLIST_HARD_CAP) {
+          truncated = true;
+          break;
+        }
+        // Invidious omits nextpage indicators on the last page by returning
+        // fewer items than requested. 200 = full page; anything less = done.
+        if (pageVideos.length < 200) break;
+      }
+
+      const deduped = dedupe(videos).slice(0, PLAYLIST_HARD_CAP);
+      if (deduped.length === 0) {
+        throw new Error('playlist is empty or contained no videos');
+      }
+      return { playlistTitle, videos: deduped, truncated };
+    } catch (err) {
+      const host = (() => { try { return new URL(base).host; } catch { return base; } })();
+      errors.push(`invidious ${host}: ${err instanceof Error ? err.message : String(err)}`);
+    }
+  }
+  return null;
+}
+
+/**
+ * Given a YT / YT Music playlist URL, return every track (up to
+ * PLAYLIST_HARD_CAP). Tries Piped (with pagination) first, then
+ * Invidious. Throws if neither backend can resolve the playlist.
+ */
+export async function resolvePlaylistAllVideos(
+  url: string,
+  pipedInstance: string
+): Promise<PlaylistListing> {
+  const playlistId = extractPlaylistId(url);
+  if (!playlistId) {
+    throw new Error('No playlist id in URL (expected `?list=...`)');
+  }
+
+  const errors: string[] = [];
+  if (pipedInstance) {
+    const piped = await listAllViaPiped(playlistId, pipedInstance, errors);
+    if (piped) return piped;
+  }
+  const inv = await listAllViaInvidious(playlistId, errors);
+  if (inv) return inv;
+
+  throw new Error(
+    `Could not list tracks in playlist "${playlistId}" via any backend.\n` +
     errors.join('\n')
   );
 }

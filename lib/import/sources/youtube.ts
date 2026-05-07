@@ -14,7 +14,6 @@ import { safeFilename } from '../net';
 import { getYtAudio, type YtVideoInfo } from './ytInnertube';
 import { getPipedAudio, type PipedYtAudio } from './piped';
 import { getInvidiousAudio, type InvidiousAudio } from './invidious';
-import { isPlaylistOnlyUrl, resolvePlaylistFirstVideo } from './ytPlaylist';
 import { useStore } from '../../../store/useStore';
 import type { Track } from '../../../types/domain';
 
@@ -32,37 +31,15 @@ export async function importFromYouTube(opts: YtDownloadOptions): Promise<Track>
   const piped = useStore.getState().settings.pipedInstance?.trim() ?? '';
   const errors: string[] = [];
 
-  // 0. Playlist URLs (`?list=PL...` with no `v=...`) need to be expanded
-  //    to a single track first; per-video extractors below cannot parse
-  //    them. This mirrors the desktop's `--no-playlist` behaviour: import
-  //    the first track of the playlist. Full-playlist support is a
-  //    future feature.
-  let resolveUrl = opts.url;
-  if (isPlaylistOnlyUrl(resolveUrl)) {
-    try {
-      const first = await resolvePlaylistFirstVideo(resolveUrl, piped);
-      const playlistLabel = first.playlistTitle
-        ? `from playlist "${first.playlistTitle}"`
-        : 'from playlist';
-      opts.onTitle(`${first.author ? first.author + ' \u2014 ' : ''}${first.title} (${playlistLabel})`);
-      resolveUrl = `https://www.youtube.com/watch?v=${first.videoId}`;
-    } catch (err) {
-      throw new Error(
-        `That looks like a playlist URL, but no first track could be resolved.\n\n` +
-        (err instanceof Error ? err.message : String(err)) +
-        `\n\nTip: paste a single-track URL (one with \`?v=...\`) instead, ` +
-        `or set a working Piped instance in Settings \u2192 YouTube proxy.`
-      );
-    }
-  }
-  if (opts.isCancelled()) throw new Error('cancelled');
-
+  // Playlist URLs are fanned out into per-track tasks by `startImport`
+  // before they ever reach this function; we only see single-video URLs
+  // here, so no playlist handling is needed at this layer.
   let info: PipedYtAudio | InvidiousAudio | YtVideoInfo | null = null;
 
   // Tier 1: Piped (server handles BotGuard / PO tokens).
   if (piped) {
     try {
-      info = await getPipedAudio(resolveUrl, piped);
+      info = await getPipedAudio(opts.url, piped);
     } catch (err) {
       errors.push(err instanceof Error ? err.message : String(err));
     }
@@ -72,7 +49,7 @@ export async function importFromYouTube(opts: YtDownloadOptions): Promise<Track>
   // Tier 2: Invidious — different infrastructure, often healthy when Piped isn't.
   if (!info) {
     try {
-      info = await getInvidiousAudio(resolveUrl);
+      info = await getInvidiousAudio(opts.url);
     } catch (err) {
       errors.push(err instanceof Error ? err.message : String(err));
     }
@@ -82,7 +59,7 @@ export async function importFromYouTube(opts: YtDownloadOptions): Promise<Track>
   // Tier 3: direct Innertube — last resort, mostly broken by PO tokens.
   if (!info) {
     try {
-      info = await getYtAudio(resolveUrl);
+      info = await getYtAudio(opts.url);
     } catch (err) {
       errors.push(err instanceof Error ? err.message : String(err));
     }
