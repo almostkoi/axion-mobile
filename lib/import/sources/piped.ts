@@ -133,7 +133,7 @@ async function fetchLiveInstances(): Promise<string[]> {
   return [...STATIC_FALLBACK];
 }
 
-async function instancesToTry(primary: string): Promise<string[]> {
+export async function getPipedInstances(primary: string): Promise<string[]> {
   const ordered: string[] = [];
   const seen = new Set<string>();
   const add = (raw: string): void => {
@@ -155,8 +155,13 @@ const MAX_INSTANCES_PER_REQUEST = 8;
 // Per-instance timeout. Most live instances respond in <2s; dead ones hang.
 const INSTANCE_TIMEOUT_MS = 6000;
 
+// Hard cap shared with the resolver in `ytPlaylist.ts` — keep modest so a
+// dead instance directory can't stall a phone for >1 minute.
+export const PIPED_MAX_INSTANCES_PER_REQUEST = MAX_INSTANCES_PER_REQUEST;
+export const PIPED_INSTANCE_TIMEOUT_MS = INSTANCE_TIMEOUT_MS;
+
 /** Single-instance JSON GET that throws on HTTP errors / non-JSON bodies. */
-async function pipedJson<T>(base: string, path: string): Promise<T> {
+export async function pipedJson<T>(base: string, path: string): Promise<T> {
   const ctl = new AbortController();
   const timer = setTimeout(() => ctl.abort(), INSTANCE_TIMEOUT_MS);
   try {
@@ -188,7 +193,7 @@ export async function getPipedAudio(url: string, instance: string): Promise<Pipe
   const videoId = extractVideoId(url);
   if (!videoId) throw new Error('Could not parse a YouTube video id from that URL');
   const errors: string[] = [];
-  const list = (await instancesToTry(instance)).slice(0, MAX_INSTANCES_PER_REQUEST);
+  const list = (await getPipedInstances(instance)).slice(0, MAX_INSTANCES_PER_REQUEST);
   for (const base of list) {
     try {
       const data = await pipedJson<PipedStreamsResponse>(base, `/streams/${videoId}`);
@@ -232,7 +237,7 @@ export async function searchPiped(
   instance: string
 ): Promise<{ videoId: string; title: string; author: string } | null> {
   const errors: string[] = [];
-  const list = (await instancesToTry(instance)).slice(0, MAX_INSTANCES_PER_REQUEST);
+  const list = (await getPipedInstances(instance)).slice(0, MAX_INSTANCES_PER_REQUEST);
   for (const base of list) {
     try {
       const path = `/search?q=${encodeURIComponent(query)}&filter=music_songs`;

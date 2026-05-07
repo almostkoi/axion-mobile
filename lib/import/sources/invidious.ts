@@ -121,7 +121,7 @@ async function fetchLiveInstances(): Promise<string[]> {
   return [...STATIC_FALLBACK];
 }
 
-async function instancesToTry(): Promise<string[]> {
+export async function getInvidiousInstances(): Promise<string[]> {
   const ordered: string[] = [];
   const seen = new Set<string>();
   const live = await fetchLiveInstances();
@@ -132,7 +132,13 @@ async function instancesToTry(): Promise<string[]> {
   return ordered;
 }
 
-async function invJson<T>(base: string, path: string): Promise<T> {
+// Hard caps shared with the playlist resolver. Keep them small so
+// the resolver can't stall the phone for >1 minute when everything
+// is rate-limited.
+export const INVIDIOUS_MAX_INSTANCES_PER_REQUEST = MAX_INSTANCES_PER_REQUEST;
+export const INVIDIOUS_INSTANCE_TIMEOUT_MS = INSTANCE_TIMEOUT_MS;
+
+export async function invJson<T>(base: string, path: string): Promise<T> {
   const ctl = new AbortController();
   const timer = setTimeout(() => ctl.abort(), INSTANCE_TIMEOUT_MS);
   try {
@@ -179,7 +185,7 @@ export async function getInvidiousAudio(url: string): Promise<InvidiousAudio> {
   const videoId = extractVideoId(url);
   if (!videoId) throw new Error('Could not parse a YouTube video id from that URL');
   const errors: string[] = [];
-  const list = (await instancesToTry()).slice(0, MAX_INSTANCES_PER_REQUEST);
+  const list = (await getInvidiousInstances()).slice(0, MAX_INSTANCES_PER_REQUEST);
   for (const base of list) {
     try {
       const data = await invJson<InvidiousVideoResponse>(base, `/api/v1/videos/${videoId}`);
@@ -219,7 +225,7 @@ export async function searchInvidious(
   query: string
 ): Promise<{ videoId: string; title: string; author: string } | null> {
   const errors: string[] = [];
-  const list = (await instancesToTry()).slice(0, MAX_INSTANCES_PER_REQUEST);
+  const list = (await getInvidiousInstances()).slice(0, MAX_INSTANCES_PER_REQUEST);
   for (const base of list) {
     try {
       const path = `/api/v1/search?q=${encodeURIComponent(query)}&type=video`;
