@@ -11,7 +11,7 @@
 import { classifyUrl, sourceLabel } from './classify';
 import {
   registerTask, patch, cancelTask, listTasks, onImportProgress,
-  isCancelled, removeTask, clearFinished, getTask
+  isCancelled, removeTask, removeTasks, clearFinished, clearAll, getTask
 } from './registry';
 import type { ImportTaskProgress, StartImportPayload, ImportSource } from './types';
 
@@ -29,7 +29,8 @@ import { refreshLibrary } from '../../hooks/useLibrary';
 
 export { classifyUrl, sourceLabel };
 export {
-  cancelTask, listTasks, onImportProgress, removeTask, clearFinished
+  cancelTask, listTasks, onImportProgress,
+  removeTask, removeTasks, clearFinished, clearAll
 };
 export type { ImportTaskProgress, ImportSource, StartImportPayload };
 

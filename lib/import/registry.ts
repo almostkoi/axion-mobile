@@ -73,3 +73,22 @@ export function clearFinished(): void {
 export function removeTask(taskId: string): void {
   tasks.delete(taskId);
 }
+
+/** Bulk remove a set of task ids (no cancellation — caller decides). */
+export function removeTasks(taskIds: string[]): void {
+  for (const id of taskIds) tasks.delete(id);
+}
+
+/**
+ * Cancel every running task (so any in-flight fetches abort) and drop
+ * the whole list. Used by the "Clear all import history" action.
+ */
+export function clearAll(): void {
+  for (const [, t] of tasks) {
+    if (!t.cancelled) {
+      t.cancelled = true;
+      try { t.controller.abort(); } catch { /* ignore */ }
+    }
+  }
+  tasks.clear();
+}

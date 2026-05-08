@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Text, View, LayoutChangeEvent, GestureResponderEvent } from 'react-native';
+import { Text, View, LayoutChangeEvent } from 'react-native';
 import { GestureDetector, Gesture } from 'react-native-gesture-handler';
 import { runOnJS } from 'react-native-reanimated';
 import { COLORS } from '../lib/theme';
@@ -77,6 +77,18 @@ export const Scrubber: React.FC<Props> = ({ position, duration, onSeek, accent }
     onSeek(finalSeconds);
   };
 
+  // Tap and Pan are composed via Gesture.Race so exactly one wins per
+  // touch — a quick stationary tap fires Tap.onEnd, a finger that moves
+  // more than ~2 px fires Pan.onUpdate / Pan.onEnd. The earlier mix of
+  // Pan + the JS responder system caused intermittent double-fires (one
+  // commit at the release point, one at the touch start) which manifested
+  // as "skip sometimes goes back" on Android.
+  const tap = Gesture.Tap()
+    .maxDuration(250)
+    .onEnd((e, success) => {
+      if (success) runOnJS(commitSeekFromX)(e.x);
+    });
+
   const pan = Gesture.Pan()
     .minDistance(2)
     .onBegin((e) => {
@@ -97,21 +109,15 @@ export const Scrubber: React.FC<Props> = ({ position, duration, onSeek, accent }
       if (!success) runOnJS(setScrubbing)(false);
     });
 
-  const handleLayout = (e: LayoutChangeEvent): void => setWidth(e.nativeEvent.layout.width);
+  const composed = Gesture.Race(pan, tap);
 
-  const handlePress = (e: GestureResponderEvent): void => {
-    // Tap-to-seek: pan never engages on a quick tap (minDistance), so the
-    // responder system fires this instead.
-    commitSeekFromX(e.nativeEvent.locationX);
-  };
+  const handleLayout = (e: LayoutChangeEvent): void => setWidth(e.nativeEvent.layout.width);
 
   return (
     <View className="px-1">
-      <GestureDetector gesture={pan}>
+      <GestureDetector gesture={composed}>
         <View
           onLayout={handleLayout}
-          onStartShouldSetResponder={() => true}
-          onResponderRelease={handlePress}
           style={{ paddingVertical: 14 }}
         >
           <View

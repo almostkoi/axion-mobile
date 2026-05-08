@@ -136,6 +136,27 @@ export async function deleteAllTracks(): Promise<void> {
   await db.runAsync(`DELETE FROM tracks`);
 }
 
+/**
+ * Remove a single track from the library DB. Foreign-key cascade also
+ * removes any references in `playlist_tracks`. The on-disk audio file is
+ * NOT touched — that's deliberate so callers can decide separately.
+ */
+export async function deleteTrack(id: TrackId): Promise<void> {
+  const db = await getDb();
+  await db.runAsync(`DELETE FROM tracks WHERE id = ?`, id);
+}
+
+/** Bulk delete by id list. Single transaction. */
+export async function deleteTracks(ids: TrackId[]): Promise<void> {
+  if (ids.length === 0) return;
+  const db = await getDb();
+  await db.withTransactionAsync(async () => {
+    for (const id of ids) {
+      await db.runAsync(`DELETE FROM tracks WHERE id = ?`, id);
+    }
+  });
+}
+
 export async function setLiked(id: TrackId, liked: boolean): Promise<void> {
   const db = await getDb();
   await db.runAsync(`UPDATE tracks SET liked = ? WHERE id = ?`, liked ? 1 : 0, id);
